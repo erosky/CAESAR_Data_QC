@@ -1,0 +1,10 @@
+For each flight:
+find an out of cloud sections near the beginning of flight.
+find an out of cloud section 1/2 into flight.
+find an out of cloud section near end of flight.
+
+Has been out of cloud for at least 15 minutes prior (for accurate VXL).
+
+Find the time offset between VXL and each picarro.
+
+Is the time offset consistent over the flight?
