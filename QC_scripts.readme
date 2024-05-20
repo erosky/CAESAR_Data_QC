@@ -1,0 +1,19 @@
+Thresholds:
+
+This file stores a set of thresholds to be used for automatic data qc.
+
+Threshold QC:
+
+This script takes as input a netcdf file and outputs timestamps for certain QC flags.
+How to run
+manual_QC input_nc thresholds
+
+output: flight_manualQC.csv
+
+Manual QC:
+
+This file stores maunally determined start and end times for certain qc flags.
+
+generate QC file:
+
+This scripts reads in the QC times and creates a netcdf file.
