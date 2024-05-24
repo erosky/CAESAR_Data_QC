@@ -28,7 +28,7 @@ if verify == "N":
     sys.exit(0)
 
 # Create output file to store the QC data
-outputfieldnames = ['time', 'qc_variable', 'flag_name', 'flag_value']
+outputfieldnames = ['time', 'qc_variable', 'flag_name']
 csvfile = open(outputfilename, 'w', newline='')
 outputwriter = csv.DictWriter(csvfile, fieldnames=outputfieldnames)
 outputwriter.writeheader()
@@ -44,25 +44,28 @@ netcdf_variables = \
 "PSAMP_CVI", 
 "DRYFLW_CVI",
 "BYPFLW_CVI",
-"USRFLW_CVI"
+"USRFLW_CVI",
+"H2O_WVISO1",
+"H2O_WVISO2",
 ]
 
 ################################
 # Read in the netcdf variables #
 ################################
 f = netcdf_file(ncfilename, 'r', mmap=False) # Open the netcdf file
+v = {}  # Empty dictionary to store the variables
 
 for nc_var in netcdf_variables:             # For each variable in the netcdf_variables list
     values = f.variables[nc_var]            # Retrieve the variable values from the netcdf file
     array = np.array(values[:])             # Write the values to a Numpy array
-    exec(nc_var + " = array")               # Give this array the same name as the variable (Note: this is extremely unconventional, but works well in this case!)
+    v[nc_var] = array                      # Store the array in the dictionary
 
 f.close()                                   # Close the netcdf file
 
 #####################
 # Derived variables #
 #####################
-EXCESS = DRYFLW_CVI - (.64+BYPFLW_CVI+USRFLW_CVI)
+v['EXCESS'] = v['DRYFLW_CVI'] - (.64+v['BYPFLW_CVI']+v['USRFLW_CVI'])
 
 
 # boolean_mask = PUSER_CVI >= PSAMP_CVI
@@ -74,35 +77,48 @@ EXCESS = DRYFLW_CVI - (.64+BYPFLW_CVI+USRFLW_CVI)
 # CONDITION                                             #
 # Backflow: User pressure larger than sample pressure   #
 #########################################################
-backflow_mask = PUSER_CVI >= PSAMP_CVI  # backflow_mask is a boolean array: 1 if the condition is satisfied, 0 when not.
-backflow_times = Time[backflow_mask]    # The boolean array is used to extract just the times that the condition is satisfied.
+backflow_mask = v['PUSER_CVI'] >= v['PSAMP_CVI']  # backflow_mask is a boolean array: 1 if the condition is satisfied, 0 when not.
+backflow_times = v['Time'][backflow_mask]    # The boolean array is used to extract just the times that the condition is satisfied.
 
 print("{} seconds of backflow.".format(len(backflow_times)))
 
 for t in backflow_times:
-    outputwriter.writerow({'time': t, 'qc_variable': 'CVI_quality_flag', 'flag_name': 'bad_flows', 'flag_value': 1})
+    outputwriter.writerow({'time': t, 'qc_variable': 'CVI_quality', 'flag_name': 'bad_flows'})
+    outputwriter.writerow({'time': t, 'qc_variable': 'WVISO1_quality', 'flag_name': 'bad_flows'})
 
 
 #########################################################
 # CONDITION                                             #
 # Condensed water or total water sampling in WVISO1     #
 #########################################################
-condensedwater_mask = np.logical_and(DRYFLW_CVI>2, abs(EXCESS)>(0.4-0.15))
-condensedwater_times = Time[condensedwater_mask]
+condensedwater_mask = np.logical_and(v['DRYFLW_CVI']>2, abs(v['EXCESS'])>(0.4-0.15))
+condensedwater_times = v['Time'][condensedwater_mask]
 
-totalwater_mask = np.invert(condensedwater_mask)
-totalwater_times = Time[totalwater_mask]
+totalwater_mask = v['DRYFLW_CVI']<0.15
+totalwater_times = v['Time'][totalwater_mask]
 
 print("{} seconds of condensed water sampling on CVI.".format(len(condensedwater_times)))
 print("{} seconds of total water sampling on CVI.".format(len(totalwater_times)))
 
 for t in condensedwater_times:
-    outputwriter.writerow({'time': t, 'qc_variable': 'CVI_status_flag', 'flag_name': 'condensed_water', 'flag_value': 1})
+    outputwriter.writerow({'time': t, 'qc_variable': 'CVI_status', 'flag_name': 'condensed_water'})
+    outputwriter.writerow({'time': t, 'qc_variable': 'WVISO1_status', 'flag_name': 'condensed_water'})
 for t in totalwater_times:
-    outputwriter.writerow({'time': t, 'qc_variable': 'CVI_status_flag', 'flag_name': 'total_water', 'flag_value': 0})
+    outputwriter.writerow({'time': t, 'qc_variable': 'CVI_status', 'flag_name': 'total_water'})
+    outputwriter.writerow({'time': t, 'qc_variable': 'WVISO1_status', 'flag_name': 'total_water'})
 
 
 #########################################################
 # CONDITION                                             #
 # Poor signal level in WVISO1&2 due to low humidity     #
 #########################################################
+
+# WVISO1
+
+
+# WVISO2 out of cloud
+
+
+# WVISO2 in cloud
+# low humidity should last at least 5 seconds to justify flagging
+

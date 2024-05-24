@@ -1,0 +1,13 @@
+starttime,endtime,qc_variable,flag_name
+40400,40500,WVISO1_quality,caution_residual_vapor
+43450,43560,WVISO1_quality,caution_inlet_flooding
+44600,44650,WVISO1_quality,caution_residual_vapor
+52365,52435,WVISO1_quality,caution_inlet_flooding
+52460,52500,WVISO1_quality,caution_residual_vapor
+53000,53130,WVISO1_quality,caution_residual_vapor
+40400,40500,CVI_quality,caution_residual_vapor
+43450,43560,CVI_quality,caution_inlet_flooding
+44600,44650,CVI_quality,caution_residual_vapor
+52365,52435,CVI_quality,caution_inlet_flooding
+52460,52500,CVI_quality,caution_residual_vapor
+53000,53130,CVI_quality,caution_residual_vapor
