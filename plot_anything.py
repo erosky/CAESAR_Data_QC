@@ -38,7 +38,7 @@ fig = plt.figure()
 for nc_var in netcdf_variables:             # For each variable in the netcdf_variables list
     values = f.variables[nc_var]            # Retrieve the variable values from the netcdf file
     array = np.array(values[:])             # Write the values to a Numpy array
-    plt.plot(time, array, label=nc_var)
+    plt.plot(time, array, label=nc_var)     # Plot the array
 f.close()                                   # Close the netcdf file
 
 plt.legend()
