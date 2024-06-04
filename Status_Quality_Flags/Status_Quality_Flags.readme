@@ -7,11 +7,11 @@ Last updated: May 23, 2024
 --- These times get recorded into a csv file.
 --- Any times that are not flagged for quality will default to being "best_quality".
 --- The headers for the csv file are as follows:
---- 'time', 'qc_variable', 'flag_name', 'flag_value'
+--- 'time', 'qc_variable', 'flag_name'
 
 (2) Manually record specific QC flags for a research flight into a csv file.
 --- The headers for this csv file are as follows:
---- 'starttime', 'endtime', 'qc_variable', 'flag_name', 'flag_value', 'notes'
+--- 'starttime', 'endtime', 'qc_variable', 'flag_name', 'notes'
 
 (3) Using the automatic QC csv output, add these flags to a QC netcdf file.
 
@@ -37,24 +37,21 @@ int CVI_status(Time) ;
     CVI_status:long_name = "CVI status flag" ;
     CVI_status:standard_name = "CVI_status" ;
     CVI_status:_FillValue = 0 ;
-    CVI_status:flag_values = 1, 2, 3, 4, 5 ;
-    CVI_status:flag_meanings = "total_water 
-                                condensed_water
-                                cvi_calibration 
-                                large_counterflow
-                                small_counterflow
-                                cabin_air" ;
+    CVI_status:flag_values = 1, 2, 3 ;
+    CVI_status:flag_meanings = "counterflow_off
+                                counterflow_on
+                                other" ;
 
 int CVI_quality(Time) ;
     CVI_quality:long_name = "CVI quality flag" ;
     CVI_quality:standard_name = "CVI_quality" ;
     CVI_quality:_FillValue = 0 ;
-    CVI_quality:flag_values = 1, 2, 3, 4, 5 ;
-    CVI_quality:flag_meanings = "best_quality 
+    CVI_quality:flag_values = 1, 2, 3, 4 ;
+    CVI_quality:flag_meanings = "best_quality
                                 caution_low_humidity
                                 caution_inlet_flooding
                                 caution_residual_vapor 
-                                bad_flows" ;
+                                bad" ;
 
 int WVISO1_status(Time) ;
     WVISO1_status:long_name = "WVISO1 status flag" ;
@@ -63,9 +60,9 @@ int WVISO1_status(Time) ;
     WVISO1_status:flag_values = 1, 2, 3, 4, 5 ;
     WVISO1_status:flag_meanings = "total_water 
                                 condensed_water
-                                cvi_calibration 
-                                large_counterflow
-                                small_counterflow
+                                suspected_precip
+                                calibration 
+                                unknown
                                 cabin_air" ;
 
 int WVISO1_quality(Time) ;
@@ -77,15 +74,17 @@ int WVISO1_quality(Time) ;
                                     caution_low_humidity
                                     caution_inlet_flooding
                                     caution_residual_vapor 
-                                    bad_flows" ;
+                                    bad" ;
 
 int WVISO2_status(Time) ;
     WVISO2_status:long_name = "WVISO2 status flag" ;
     WVISO2_status:standard_name = "WVISO2_status" ;
     WVISO2_status:_FillValue = 0 ;
-    WVISO2_status:flag_values = 1, 2, 3 ;
-    WVISO2_status:flag_meanings = "cloud_total_water 
-                                    vapor_total_water
+    WVISO2_status:flag_values = 1, 2, 3, 4 ;
+    WVISO2_status:flag_meanings = "vapor
+                                    vapor_and_condensate
+                                    vapor_and_precip
+                                    calibration
                                     cabin_air" ;
 
 int WVISO2_quality(Time) ;
@@ -97,27 +96,38 @@ int WVISO2_quality(Time) ;
                                     caution_low_humidity
                                     caution_inlet_flooding
                                     caution_residual_vapor 
-                                    bad_flows" ;
+                                    bad" ;
 
 
 ------------------------------------------------
-Flag meaning explantations:
+Flag meaning explanations:
 ------------------------------------------------
+(CVI status)
+counterflow_off: Dry counterflow completely off.
+counterflow_on: Dry counterflow creating an excess of 0.4 +/- 0.15 slpm.
+other: Stepping dry counterflow for humidity dependency tests. Other in-flight calibration and intsrument testing. Transition periods. Dry counterflow creating an excess larger than 0.55 slpm (possibly for testing larger cutsize or drying the inlet).
+------------------------------------------------
+(WVISO1 status)
 total_water: Dry counterflow completely off.
-condensed water: Dry counterflow creating an excess of 0.4 +/- 0.15 slpm.
-cvi_calibration: Stepping dry counterflow for humidity dependency tests. Other in-flight calibration and intsrument testing.
-large_counterflow: Dry counterflow creating an excess larger than 0.55 slpm (possibly for testing larger cutsize or drying the inlet).
-small_counterflow: Dry counterflow creating an excess smaller than 0.25 slpm (possibly for testing smaller cutsize).
+condensed_water: Dry counterflow creating an excess of 0.4 +/- 0.15 slpm.
+suspected_precip: Likely sampling precip below cloud. Dry counterflow creating an excess of 0.4 +/- 0.15 slpm.
+calibration: Stepping dry counterflow for humidity dependency tests. Other in-flight calibration and intsrument testing.
+unknown: Transition periods between counterflow settings. Dry counterflow creating an excess larger than 0.55 slpm (possibly for testing larger cutsize or drying the inlet).
 cabin_air: Sampling cabin air.
 ------------------------------------------------
+(WVISO2 status)
+vapor: WVISO2 sampling out of cloud. Determined by CVI flows and cloud probes.
+vapor_and_condensate: WVISO2 sampling in cloud. Determined by CVI flows and cloud probes.
+vapor_and_precip: WVISO2 sampling below cloud with likely precip. Determined by CVI flows, cloud probes, and flight notes.
+calibration: Instrument calibration.
+cabin_air: Sampling cabin air.
+------------------------------------------------
+(CVI, WVISO1, WVISO2 quality)
 best_quality: Safe to use.
 caution_low_humidity: Low signal to noise ratio due to dry conditions.
 caution_inlet_flooding: Data influenced by inlet flooding (dD swoop).
 caution_residual_vapor: Influenced by residual vapor in sample line after icing, flooding, or quickly going from high water content to low water content (such as switching from total water sampling to condensed water sampling).
-bad_flows: Flow reversal due to pressure gradients. Unusually high excess from drying the sample line using counterflow. Sampling cabin air. Unusual flows for calibration and testing.
-------------------------------------------------
-cloud_total_water: WVISO2 sampling in cloud. Determined by CVI flows and cloud probes.
-vapor_total_water: WVISO2 sampling out of cloud. Determined by CVI flows and cloud probes.
+bad: Flow reversal due to pressure gradients. Unusually high excess from drying the sample line using counterflow. Sampling cabin air. Unusual flows for calibration and testing.
 ------------------------------------------------
 
 
