@@ -1,4 +1,4 @@
-function out = plot_ice_isotope(ncfile)
+function out = VXL_WVISO_agreement(ncfile)
     %Plot a time series of CDP DSDs from SPICULE
     datetime.setDefaultFormats('default','HH:mm:ss (yyyy-MM-dd)')
     
@@ -24,7 +24,7 @@ function out = plot_ice_isotope(ncfile)
     
     
     no_cloud = conc_cdp < 0.01;
-    in_cloud = 
+    in_cloud = counterflow > 2;
     sum(no_cloud)
     vapor = (conc_cdp < 0.01) & (counterflow < 0.15);
     sum(vapor)
@@ -35,12 +35,41 @@ function out = plot_ice_isotope(ncfile)
     time_vapor = time(vapor);
     T1 = table(VXL_vapor, WVISO1, time_vapor);
     
-    %Make figure
+    test = H2o_pic1(in_cloud);
+    size(time(in_cloud))
+    %Plot in 30 minute intervals
+    for t = 1:1800:(size(time(in_cloud))-1800)
+        size(test(t:t+1800))
+%         figure(1);
+%         
+%         %p1 = scatter(H2o_pic1(vapor), dD_1(vapor), 20, time(vapor), "DisplayName", "Picarro 1 out of cloud");hold on 
+         p2 = scatter(test(t:t+1800), dD_1(in_cloud)(t:t+1800), 20, time(in_cloud)(t:t+1800), "DisplayName", "Picarro 1 in cloud");hold off 
+%         %p2 = scatter(vxl(no_cloud), H2o_pic2(no_cloud),10, datenum(time(no_cloud)), "DisplayName", "Picarro 2");
+% 
+%         ylabel('dD');
+%         xticks('auto')
+% 
+%         grid on
+%         xlabel('WVISO1 water')
+%         legend();
+% 
+%         title([flightnumber ' ' flightdate]);
+%         row1 = dataTipTextRow('Time', string(time(vapor)(t:t+1800)));
+%         %p1.DataTipTemplate.DataTipRows(end+1) = row1;
+%         row2 = dataTipTextRow('Time', string(time(in_cloud)(t:t+1800)));
+%         p2.DataTipTemplate.DataTipRows(end+1) = row2;
+% 
+%         grid on
+%         legend();
+%         title([flightnumber ' ' flightdate]);
+    end
+    
     figure(1);
     
     %Ice habits
     ax1 = nexttile;
-    p1 = scatter(H2o_pic2, dD_1, 20, time, "DisplayName", "Picarro 1");hold on 
+    %p1 = scatter(H2o_pic1(vapor), dD_1(vapor), 20, time(vapor), "DisplayName", "Picarro 1 out of cloud");hold on 
+    p2 = scatter(H2o_pic1(in_cloud), dD_1(in_cloud), 20, time(in_cloud), "DisplayName", "Picarro 1 in cloud");hold on 
     %p2 = scatter(vxl(no_cloud), H2o_pic2(no_cloud),10, datenum(time(no_cloud)), "DisplayName", "Picarro 2");
 
     ylabel('dD');
@@ -51,10 +80,10 @@ function out = plot_ice_isotope(ncfile)
     legend();
 
     title([flightnumber ' ' flightdate]);
-    row1 = dataTipTextRow('Time', string(time));
-    p1.DataTipTemplate.DataTipRows(end+1) = row1;
-    row2 = dataTipTextRow('Time', string(time(no_cloud)));
-    %p2.DataTipTemplate.DataTipRows(end+1) = row2;
+    row1 = dataTipTextRow('Time', string(time(vapor)));
+    %p1.DataTipTemplate.DataTipRows(end+1) = row1;
+    row2 = dataTipTextRow('Time', string(time(in_cloud)));
+    p2.DataTipTemplate.DataTipRows(end+1) = row2;
     
     grid on
     legend();
