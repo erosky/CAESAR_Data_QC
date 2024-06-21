@@ -1,0 +1,11 @@
+starttime,endtime,qc_variable,flag_name
+24860,26440,CVI_quality,bad_flows
+44940,46446,CVI_quality,bad_flows
+35577,35597,CVI_quality,caution_residual_vapor
+37763,38970,CVI_quality,caution_residual_vapor
+38992,39115,CVI_quality,caution_residual_vapor
+38992,39139,CVI_quality,caution_residual_vapor
+39130,39202,CVI_quality,caution_residual_vapor
+40414,40461,CVI_quality,caution_residual_vapor
+40497,40503,CVI_quality,caution_residual_vapor
+40829,40920,CVI_quality,caution_residual_vapor

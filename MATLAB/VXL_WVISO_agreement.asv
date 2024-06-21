@@ -24,11 +24,11 @@ function out = VXL_WVISO_agreement(ncfile)
     
     test = ncread('../Status_Quality_Flags/RF05/testqc.nc','CVI_quality');
     mycolors = [];
-    for c = test';
+    for c = test(:);
         if c == 0
-            mycolors = [mycolors; [0,0,1]];
+            mycolors = [mycolors; [0,0,1]]
         else
-            mycolors = [mycolors; [1,0,1]];
+            mycolors = [mycolors; [1,0,0]]
         end
     end
 
