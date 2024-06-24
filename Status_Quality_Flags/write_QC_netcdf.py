@@ -53,8 +53,8 @@ print(len(time))
 ''' 
 For example, the 'total_water' flag is assigned the value 1.
 '''
-status_flag_values = {'total_water': 1, 'condensed_water': 2, 'cvi_calibration': 3, 'cabin_air': 4}
-quality_flag_values = {'best_quality': 1, 'caution_low_humidity': 2, 'caution_inlet_flooding': 3, 'caution_residual_vapor': 4, 'bad_flows': 5}
+status_flag_values = {'total_water': 0, 'condensed_water': 1, 'calibration': 2, 'unknown': 3}
+quality_flag_values = {'best_quality': 0, 'caution_low_humidity': 1, 'caution_inlet_flooding': 2, 'caution_residual_vapor': 3, 'bad': 4}
 
 
 ####################################################
@@ -76,6 +76,14 @@ CVI_quality_dict = OrderedDict()
 for t in time:
     CVI_quality_dict[t]=0
 
+WVISO1_quality_dict = OrderedDict()
+for t in time:
+    WVISO1_quality_dict[t]=0
+
+WVISO2_quality_dict = OrderedDict()
+for t in time:
+    WVISO2_quality_dict[t]=0
+
 
 ######################################################################
 # Read the automatic QC file and update the timestamps with qc flags #
@@ -90,6 +98,10 @@ for row in reader:
         CVI_status_dict[row['time']] = status_flag_values[row['flag_name']]
     elif row['qc_variable']=='CVI_quality':
         CVI_quality_dict[row['time']] = quality_flag_values[row['flag_name']]
+    elif row['qc_variable']=='WVISO1_quality':
+        WVISO1_quality_dict[row['time']] = quality_flag_values[row['flag_name']]
+    elif row['qc_variable']=='WVISO2_quality':
+        WVISO2_quality_dict[row['time']] = quality_flag_values[row['flag_name']]
 
 print(len(CVI_status_dict.keys())) # Print for sanity check
 print(len(CVI_quality_dict.keys())) # Print for sanity check
@@ -112,6 +124,12 @@ if manualexists==True:
         elif row['qc_variable']=='CVI_quality':
             for r in range(start,end):
                 CVI_quality_dict[str(r)] = quality_flag_values[row['flag_name']]
+        elif row['qc_variable']=='WVISO1_quality':
+            for r in range(start,end):
+                WVISO1_quality_dict[str(r)] = quality_flag_values[row['flag_name']]
+        elif row['qc_variable']=='WVISO2_quality':
+            for r in range(start,end):
+                WVISO2_quality_dict[str(r)] = quality_flag_values[row['flag_name']]
 
     print(len(CVI_status_dict.keys())) # Print for sanity check
     print(len(CVI_quality_dict.keys())) # Print for sanity check
@@ -146,5 +164,17 @@ CVI_quality = f.createVariable('CVI_quality', 'i', ('Time',))
 CVI_quality.flag_values = list(quality_flag_values.values())
 CVI_quality.flag_meanings = ' '.join(list(quality_flag_values))
 CVI_quality[:] = list(CVI_quality_dict.values())
+
+# WVISO1_quality
+WVISO1_quality = f.createVariable('WVISO1_quality', 'i', ('Time',))
+WVISO1_quality.flag_values = list(quality_flag_values.values())
+WVISO1_quality.flag_meanings = ' '.join(list(quality_flag_values))
+WVISO1_quality[:] = list(WVISO1_quality_dict.values())
+
+# WVISO2_quality
+WVISO2_quality = f.createVariable('WVISO2_quality', 'i', ('Time',))
+WVISO2_quality.flag_values = list(quality_flag_values.values())
+WVISO2_quality.flag_meanings = ' '.join(list(quality_flag_values))
+WVISO2_quality[:] = list(WVISO2_quality_dict.values())
 
 f.close()   # Close the netcdf file
