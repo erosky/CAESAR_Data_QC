@@ -10,6 +10,7 @@ function out = plot_ice_isotope(ncfile)
     H2o_pic1 = ncread(ncfile,'H2O_WVISO1');
     H2o_pic2 = ncread(ncfile,'H2O_WVISO2');
     king = ncread(ncfile,'PLWCC');
+    icing = ncread(ncfile,'RICE');
 
     % Air thermo
     hpa = ncread(ncfile,'PSXC');
@@ -40,7 +41,7 @@ function out = plot_ice_isotope(ncfile)
     
     %Make figure
     figure(1);
-    tiledlayout(3,1);
+    tiledlayout(4,1);
     
     %Ice habits
     ax1 = nexttile;
@@ -107,6 +108,21 @@ function out = plot_ice_isotope(ncfile)
 
     p8.DataTipTemplate.DataTipRows(end+1:end+2) = [datatipRow, datatipRow2];
     p9.DataTipTemplate.DataTipRows(end+1:end+2) = [datatipRow, datatipRow2];
+
+    datetick('x');
+    grid on
+    xlabel('Time')
+    legend();
+    title([flightnumber ' ' flightdate]);
+    
+    ax4 = nexttile;
+    yyaxis left
+    p5 = plot(datenum(time), altitude, "DisplayName", "Altitude (m)", "Color","g", "LineStyle", "-","LineWidth", 2);hold on
+    yyaxis right
+    p10 = plot(datenum(time), celcius, "DisplayName", "Temperature (C)", "Color","g", "LineStyle", "-","LineWidth", 2);hold on
+    ylabel('Temperature');
+ 
+    p5.DataTipTemplate.DataTipRows(end+1:end+2) = [datatipRow, datatipRow2];
     p10.DataTipTemplate.DataTipRows(end+1:end+2) = [datatipRow, datatipRow2];
 
     datetick('x');
@@ -117,7 +133,7 @@ function out = plot_ice_isotope(ncfile)
     
     
     %Link axes for panning and zooming
-    linkaxes([ax1, ax2, ax3],'x');
+    linkaxes([ax1, ax2, ax3, ax4],'x');
     zoom xon;  %Zoom x-axis only
     pan;  %Toggling pan twice seems to trigger desired behavior, not sure why
     pan;
