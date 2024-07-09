@@ -79,7 +79,6 @@ function out = plot_ice_isotope(ncfile)
     p4.DataTipTemplate.DataTipRows(end+1:end+2) = [datatipRow, datatipRow2];
     p5.DataTipTemplate.DataTipRows(end+1:end+2) = [datatipRow, datatipRow2];
 
-    % yyaxis right
     p6 = plot(datenum(time), dD_2, "DisplayName", "dD (SDI)", "Color","m", "LineStyle", "--", "LineWidth", 2);hold on
     p7 = plot(datenum(time), d180_2, "DisplayName", "d180 (SDI)", "Color","b", "LineStyle","--", "LineWidth", 2);hold on
     ylabel('Total water isotopic signature');
@@ -87,6 +86,17 @@ function out = plot_ice_isotope(ncfile)
     p6.DataTipTemplate.DataTipRows(end+1:end+2) = [datatipRow, datatipRow2];
     p7.DataTipTemplate.DataTipRows(end+1:end+2) = [datatipRow, datatipRow2];
     
+    % mark QC points
+    % yyaxis right
+    % test1 = ncread('../Status_Quality_Flags/RF09/testqc.nc','WVISO1_quality');
+    % t1 = plot(datenum(time), test1, "DisplayName", "QC flag WVISO1", "Color","k", "LineStyle", "-", "LineWidth", 2); hold on
+    % test2 = ncread('../Status_Quality_Flags/RF09/testqc.nc','WVISO2_quality');
+    % t2 = plot(datenum(time), test2, "DisplayName", "QC flag WVISO2", "Color","k", "LineStyle", "--", "LineWidth", 2); hold on
+
+    % 
+
+
+
     datetick('x')
     xlabel('Time')
     legend
@@ -97,7 +107,8 @@ function out = plot_ice_isotope(ncfile)
     p5 = plot(datenum(time), altitude, "DisplayName", "Altitude (m)", "Color","g", "LineStyle", "-","LineWidth", 2);hold on
     ylabel('Flight Altitude');
     
-    p5.DataTipTemplate.DataTipRows(end+1) = datatipRow;
+    p5.DataTipTemplate.DataTipRows(end+1:end+2) = [datatipRow, datatipRow2];
+
 
     yyaxis right
     p8 = plot(datenum(time), H2o_pic1, "DisplayName", "wviso1 h20", "Color","m", "LineStyle", "-","LineWidth", 2);hold on

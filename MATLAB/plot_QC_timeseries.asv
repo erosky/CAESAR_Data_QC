@@ -65,23 +65,36 @@ function out = plot_ice_isotope(ncfile)
     
     datatipRow = dataTipTextRow('UTC',time);
     datatipRow2 = dataTipTextRow('seconds',string(time_seconds));
-    p1.DataTipTemplate.DataTipRows(end+1:end+2) = dtRows; = datatipRow;
-    p2.DataTipTemplate.DataTipRows(end+1) = datatipRow;
+    p1.DataTipTemplate.DataTipRows(end+1:end+2) = [datatipRow, datatipRow2];
+    p2.DataTipTemplate.DataTipRows(end+1:end+2) = [datatipRow, datatipRow2];
+    p3.DataTipTemplate.DataTipRows(end+1:end+2) = [datatipRow, datatipRow2];
     
     %isotopes
     ax2 = nexttile;
     yyaxis left
-    p3 = plot(datenum(time), dD_1, "DisplayName", "dD (CVI)", "Color","r", "LineStyle", "-"); hold on
-    plot(datenum(time), d180_1, "DisplayName", "d180 (CVI)", "Color","g", "LineStyle", "-"); hold on
+    p4 = plot(datenum(time), dD_1, "DisplayName", "dD (CVI)", "Color","r", "LineStyle", "-", "LineWidth", 2); hold on
+    p5 = plot(datenum(time), d180_1, "DisplayName", "d180 (CVI)", "Color","g", "LineStyle", "-", "LineWidth", 2); hold on
     ylabel('Condensate isotopic signal');
     
-    p3.DataTipTemplate.DataTipRows(end+1) = datatipRow;
+    p4.DataTipTemplate.DataTipRows(end+1:end+2) = [datatipRow, datatipRow2];
+    p5.DataTipTemplate.DataTipRows(end+1:end+2) = [datatipRow, datatipRow2];
 
-    % yyaxis right
-    plot(datenum(time), dD_2, "DisplayName", "dD (SDI)", "Color","m", "LineStyle", "--");hold on
-    plot(datenum(time), d180_2, "DisplayName", "d180 (SDI)", "Color","b", "LineStyle","--");hold on
+    p6 = plot(datenum(time), dD_2, "DisplayName", "dD (SDI)", "Color","m", "LineStyle", "--", "LineWidth", 2);hold on
+    p7 = plot(datenum(time), d180_2, "DisplayName", "d180 (SDI)", "Color","b", "LineStyle","--", "LineWidth", 2);hold on
     ylabel('Total water isotopic signature');
+
+    p6.DataTipTemplate.DataTipRows(end+1:end+2) = [datatipRow, datatipRow2];
+    p7.DataTipTemplate.DataTipRows(end+1:end+2) = [datatipRow, datatipRow2];
     
+    % mark QC points
+    yyaxis right
+    test = ncread('../Status_Quality_Flags/RF05/testqc.nc','CVI_quality');
+    p4 = plot(datenum(time), dD_1, "DisplayName", "dD (CVI)", "Color","r", "LineStyle", "-", "LineWidth", 2); hold on
+
+ 
+
+
+
     datetick('x')
     xlabel('Time')
     legend
@@ -94,10 +107,14 @@ function out = plot_ice_isotope(ncfile)
     
     p5.DataTipTemplate.DataTipRows(end+1) = datatipRow;
 
-        yyaxis right
-        plot(datenum(time), H2o_pic1, "DisplayName", "wviso1 h20", "Color","m", "LineStyle", "-","LineWidth", 2);hold on
-    plot(datenum(time), H2o_pic2, "DisplayName", "wviso2 h20", "Color","r", "LineStyle", "--");
-    plot(datenum(time), vxl, "DisplayName", "VXL", "Color","black", "LineStyle", "-");
+    yyaxis right
+    p8 = plot(datenum(time), H2o_pic1, "DisplayName", "wviso1 h20", "Color","m", "LineStyle", "-","LineWidth", 2);hold on
+    p9 = plot(datenum(time), H2o_pic2, "DisplayName", "wviso2 h20", "Color","r", "LineStyle", "--", "LineWidth", 2);
+    p10 = plot(datenum(time), vxl, "DisplayName", "VXL", "Color","black", "LineStyle", "-", "LineWidth", 2);
+
+    p8.DataTipTemplate.DataTipRows(end+1:end+2) = [datatipRow, datatipRow2];
+    p9.DataTipTemplate.DataTipRows(end+1:end+2) = [datatipRow, datatipRow2];
+    p10.DataTipTemplate.DataTipRows(end+1:end+2) = [datatipRow, datatipRow2];
 
     datetick('x');
     grid on

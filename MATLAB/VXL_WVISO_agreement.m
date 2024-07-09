@@ -85,24 +85,24 @@ myColors(rowsToSetRed, :) = repmat([1,0,1],length(myColors(rowsToSetRed)),1);
 %         pause;
 %     end
     
-    figure(1);
+    figure(2);
     
-    %p1 = scatter(H2o_pic1(vapor), dD_1(vapor), 20, time(vapor), "DisplayName", "Picarro 1 out of cloud");hold on 
-    p2 = scatter(H2o_pic2(vapor), H2o_pic1(vapor), 20, mycolors(vapor), "DisplayName", "Picarros vapor");hold on 
+    p1 = scatter(H2o_pic1, d180_1, 20, time, "DisplayName", "Picarro 1");hold on 
+    %p2 = scatter(H2o_pic1, d180_1, 20, mycolors, "DisplayName", "Picarros vapor");hold on 
     %p2 = scatter(vxl(no_cloud), H2o_pic2(no_cloud),10, datenum(time(no_cloud)), "DisplayName", "Picarro 2");
 
     ylabel('dD');
     xticks('auto')
 
     grid on
-    xlabel('WVISO1 water')
+    xlabel('WVISO2 water')
     legend();
 
     title([flightnumber ' ' flightdate]);
-    row1 = dataTipTextRow('Time', string(time(vapor)));
-    %p1.DataTipTemplate.DataTipRows(end+1) = row1;
-    row2 = dataTipTextRow('Time', string(time(in_cloud)));
-    p2.DataTipTemplate.DataTipRows(end+1) = row2;
+    % row1 = dataTipTextRow('Time', string(time(vapor)));
+    % %p1.DataTipTemplate.DataTipRows(end+1) = row1;
+    % row2 = dataTipTextRow('Time', string(time(in_cloud)));
+    % p1.DataTipTemplate.DataTipRows(end+1) = row2;
     
     grid on
     legend();
