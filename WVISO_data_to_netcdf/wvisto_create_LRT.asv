@@ -1,0 +1,71 @@
+function out = wviso_create_LRT(ref_ncfile,wviso_dir,output_ncfile)
+
+%% If output file exists, delete to create new one
+if isfile(fullfile(output_ncfile))
+    % File exists
+    delete(fullfile(output_ncfile));
+end
+
+%% Read reference netcdf file and get time dimensions from it
+ref_info = ncinfo(ref_ncfile,'LWC_CVI');
+time_size = ref_info.Dimensions.Length;
+
+%% Read raw wviso1 data files and format to fit LRT (2346)
+% d18O_WVISO1
+% dD_WVISO1
+% H2O_WVISO1
+
+raw_wviso1_time = [];
+raw_wviso1_h2O = [];
+raw_d18O_WVISO1 = [];
+raw_dD_WVISO1 = [];
+
+filePattern = fullfile(wviso_dir, '*.dat'); % Read in all data files from the flight date
+dataFiles = dir(filePattern);
+for k = 1 : length(dataFiles)
+    datafile = fullfile(dataFiles(k).folder, dataFiles(k).name);
+    T = readtable(datafile);
+    % Extract timestamps
+    DateStrings = join([string(T.DATE) string(T.TIME)]); % Combine date and time variables
+    raw_wviso1_time = [raw_wviso1_time; datetime(DateStrings,'InputFormat','yyyy-MM-dd HH:mm:ss.SSS')];
+    % Extract variables
+    raw_wviso1_h2O = [raw_wviso1_h2O; T.H2O];
+    raw_d18O_WVISO1 = [raw_d18O_WVISO1; T.Delta_18_16];
+    raw_dD_WVISO1 = [raw_dD_WVISO1; T.Delta_D_H];
+end
+
+% Convert data to 1Hz
+wviso1_timetable = timetable(raw_wviso1_time, raw_H2O_WVISO1, raw_d18O_WVISO1, raw_dD_WVISO1);
+wviso1_1hz = retime(wviso_timetable,'secondly','mean');
+
+[wviso1_time, wviso1_h2O, wviso1_ = wviso_1hz.raw_wviso1_time;
+h2o = wviso_1hz.wviso_h2O
+
+%% Read raw wviso2 data and format to fit LRT (2406)
+% d18O_WVISO2
+% dD_WVISO2
+% H2O_WVISO2
+
+
+%% Write new netcdf file
+
+% mySchema.Name = "/";
+% mySchema.Format = "classic";
+% mySchema.Dimensions(1).Name = "time";
+% mySchema.Dimensions(1).Length = Inf;
+% ncwriteschema("emptyFile.nc",mySchema)
+
+% nccreate("myfile.nc","vmark", "Dimensions",{"x",3,"y",6},"FillValue","-32767")
+
+    % LWC_CVI
+    %        Size:       29522x1
+    %        Dimensions: Time
+    %        Datatype:   single
+    %        Attributes:
+    %                    _FillValue   = -32767
+    %                    units        = 'g/m^3'
+    %                    long_name    = 'CVI Liquid Water Content'
+    %                    actual_range = [-99 -99]
+    %                    Category     = 'Uncorr'd Raw'
+    %                    SampledRate  = 1
+    %                    DataQuality  = 'Preliminary'

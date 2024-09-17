@@ -1,0 +1,21 @@
+function out = read_wviso_data(dataFolder)
+
+filePattern = fullfile(dataFolder, '*.exe'); % Change to whatever pattern you need.
+% filePattern = fullfile(myFolder, '**/*.exe'); % To look in subfolders too, add **/.
+theFiles = dir(filePattern);
+for k = 1 : length(theFiles)
+    baseFileName = theFiles(k).name;
+    fullFileName = fullfile(theFiles(k).folder, baseFileName);
+    fprintf('Now processing %s\n', fullFileName);
+    % Now do whatever you want with this file name,
+    % such as running the program with system() or whatever.
+end
+
+    wviso_time = [];
+    wviso_h2O = [];
+    T = readtable(datafile)
+    DateStrings = join([string(T.DATE) string(T.TIME)]);
+    wviso_time = datetime(DateStrings,'InputFormat','yyyy-MM-dd HH:mm:ss.SSS')
+    wviso_h20 = T.H2O;
+
+end

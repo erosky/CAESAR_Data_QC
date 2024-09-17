@@ -1,6 +1,30 @@
-function out = plot_twc_comparison(ncfile)
+function out = WVISOfile_twc_comparison(ncfile,wvisodata,wviso1Hz)
     %Plot a time series of CDP DSDs from SPICULE
     datetime.setDefaultFormats('default','HH:mm:ss (yyyy-MM-dd)')
+
+    %%%%
+    wviso_time = [];
+    wviso_h2O = [];
+
+    filePattern = fullfile(wvisodata, 'HIDS2346*.dat'); % Change to whatever pattern you need.
+    dataFiles = dir(filePattern);
+    for k = 1 : length(dataFiles)
+        baseFileName = dataFiles(k).name;
+        datafile = fullfile(dataFiles(k).folder, baseFileName);
+        fprintf('Now processing %s\n', datafile);
+    
+        T = readtable(datafile);
+        DateStrings = join([string(T.DATE) string(T.TIME)]);
+        wviso_time = [wviso_time; datetime(DateStrings,'InputFormat','yyyy-MM-dd HH:mm:ss.SSS')];
+        wviso_h2O = [wviso_h2O; T.H2O];
+    end
+
+    wviso_timetable = timetable(wviso_time,wviso_h2O);
+    wviso_1hz = retime(wviso_timetable,'secondly','mean');
+
+    time_wviso = wviso_1hz.wviso_time;
+    h2o_wviso = wviso_1hz.wviso_h2O;
+    %%%%
     
     %Get water data from the netCDF file
     time_seconds = ncread(ncfile,'Time');
@@ -15,6 +39,7 @@ function out = plot_twc_comparison(ncfile)
     cdp_diameter = ncread(ncfile, 'DBARD_LWO');
 
     M = H2o_pic1/1000/1000;
+ 
     M_wviso2 = H2o_pic2/1000/1000;
 
     % Air thermo
@@ -78,54 +103,32 @@ total_water_content = mass_rate_total./flow_wviso2_si;
     time_ref = split(flightdate, "/");
     time = datetime(str2double(time_ref{3}),str2double(time_ref{1}),str2double(time_ref{2})) + seconds(time_seconds(:,1));
    
-    
+    H2o_wviso_nc = ncread(wviso1Hz,'H2O_WVISO1');
+    H2o_wviso2_nc = ncread(wviso1Hz,'H2O_WVISO2');
     %Make figure
     figure(1);
-    tiledlayout(3,1);
-
-    ax1 = nexttile;
-
     yyaxis left
-    p1 = plot(datenum(time), LWC_cvi, "DisplayName", "CVI cloud water content", "Color","g", "LineStyle", "-","LineWidth", 2);hold on
-    p2 = plot(datenum(time), king, "DisplayName", "King probe LWC", "Color","c", "LineStyle", "-","LineWidth", 2); hold on 
-    p3 = plot(datenum(time), cdp_lwc, "DisplayName", "CDP LWC", "Color","r", "LineStyle", "-","LineWidth", 2);
-    xticks('auto')
+    p2 = scatter(datenum(wviso_time), wviso_h2O, "DisplayName", "raw data", "Color","c"); hold on    
+    p1 = plot(datenum(time), H2o_pic1, "DisplayName", "WVISO1 (from NCAR netcdf)", "Color","b", "LineStyle", "-","LineWidth", 2);hold on
+    p3 = plot(datenum(time), H2o_wviso_nc, "DisplayName", "1Hz WVISO1 (from raw data)", "Color","g", "LineStyle", "-","LineWidth", 2); hold on 
+    p4 = plot(datenum(time), H2o_wviso2_nc, "DisplayName", "1Hz WVISO2 (from raw data)", "Color","r", "LineStyle", "-","LineWidth", 2); hold on 
+    p5 = plot(datenum(time), H2o_pic2, "DisplayName", "WVISO2 (from NCAR netcdf)", "Color","m", "LineStyle", "-","LineWidth", 2, "Marker","none");hold on
 
-    p1 = plot(datenum(time), total_water_content, "DisplayName", "CVI total water content", "Color","b", "LineStyle", "-","LineWidth", 2);hold on
-    ylabel('LWC (g/m3)');
-
-    datetick('x');
-    grid on
-    xlabel('Time')
-    legend();
-    title([flightnumber ' ' flightdate]);
-    
     datatipRow = dataTipTextRow('UTC',time);
     datatipRow2 = dataTipTextRow('seconds',string(time_seconds));
     p1.DataTipTemplate.DataTipRows(end+1:end+2) = [datatipRow, datatipRow2];
-    p2.DataTipTemplate.DataTipRows(end+1:end+2) = [datatipRow, datatipRow2];
+    p4.DataTipTemplate.DataTipRows(end+1:end+2) = [datatipRow, datatipRow2];
     p3.DataTipTemplate.DataTipRows(end+1:end+2) = [datatipRow, datatipRow2];
-    
-    ax2 = nexttile;
-    yyaxis left
-    p11 = plot(datenum(time), altitude, "DisplayName", "Altitude (m)", "Color","g", "LineStyle", "-","LineWidth", 2);hold on
-    yyaxis right
-    p10 = plot(datenum(time), celcius, "DisplayName", "Temperature (C)", "Color","b", "LineStyle", "-","LineWidth", 2);hold on
-    ylabel('Temperature');
- 
-    p11.DataTipTemplate.DataTipRows(end+1:end+2) = [datatipRow, datatipRow2];
-    p10.DataTipTemplate.DataTipRows(end+1:end+2) = [datatipRow, datatipRow2];
+    p5.DataTipTemplate.DataTipRows(end+1:end+2) = [datatipRow, datatipRow2];
 
-    %Ice habits
-    ax3 = nexttile;
-    yyaxis left
-    p1 = plot(datenum(time), hvps, "DisplayName", "HVPS (100um - 10mm)", "Color","g", "LineStyle", "-","LineWidth", 2);hold on
-    p2 = plot(datenum(time), conc_2ds, "DisplayName", "2DS (10 - 1000 um)", "Color","c", "LineStyle", "-"); hold on 
-    ylabel('OAP particle counts');
-        xticks('auto')
-        yyaxis right
-        p2 = plot(datenum(time), cdp_diameter, "DisplayName", "2DS (10 - 1000 um)", "Color","r", "LineStyle", "-"); hold on 
-        ylabel('CDP mean diameter');
+    xticks('auto')
+    ylabel('ppm');
+
+    yyaxis right
+    p6 = plot(datenum(time), king, "DisplayName", "King probe", "Color","black", "LineStyle", "-","LineWidth", 2, "Marker","none");hold on
+    ylabel('King probe LWC')
+    p6.DataTipTemplate.DataTipRows(end+1:end+2) = [datatipRow, datatipRow2];
+
 
 
     datetick('x');
@@ -134,10 +137,5 @@ total_water_content = mass_rate_total./flow_wviso2_si;
     legend();
     title([flightnumber ' ' flightdate]);
 
-       %Link axes for panning and zooming
-    linkaxes([ax1, ax2, ax3],'x');
-    zoom xon;  %Zoom x-axis only
-    pan;  %Toggling pan twice seems to trigger desired behavior, not sure why
-    pan;
     
 end

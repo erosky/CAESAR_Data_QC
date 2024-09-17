@@ -1,0 +1,143 @@
+function out = wviso1_create_LRT(ref_ncfile,wviso_dir,output_ncfile)
+
+%% If output file exists, delete to create new one
+if isfile(fullfile(output_ncfile))
+    % File exists
+    delete(fullfile(output_ncfile));
+end
+
+%% Read reference netcdf file and get time dimensions from it
+ref_info = ncinfo(ref_ncfile,'LWC_CVI');
+time = ncread(ref_ncfile,'Time');
+time_size = size(time,1)
+
+flightdate = ncreadatt(ref_ncfile, '/', 'FlightDate');
+date = split(flightdate, "/");
+ref_time = datetime(str2double(date{3}),str2double(date{1}),str2double(date{2})) + seconds(time(:,1));
+
+%% Read raw wviso1 data files and format to fit LRT (2346)
+% d18O_WVISO1
+% dD_WVISO1
+% H2O_WVISO1
+
+raw_wviso1_time = [];
+raw_H2O_WVISO1 = [];
+raw_d18O_WVISO1 = [];
+raw_dD_WVISO1 = [];
+
+filePattern = fullfile(wviso_dir, 'HIDS2346*.dat'); % Read in all data files from the flight date
+dataFiles = dir(filePattern);
+for k = 1 : length(dataFiles)
+    datafile = fullfile(dataFiles(k).folder, dataFiles(k).name);
+    T = readtable(datafile);
+    % Extract timestamps
+    DateStrings = join([string(T.DATE) string(T.TIME)]); % Combine date and time variables
+    raw_wviso1_time = [raw_wviso1_time; datetime(DateStrings,'InputFormat','yyyy-MM-dd HH:mm:ss.SSS')];
+    % Extract variables
+    raw_H2O_WVISO1 = [raw_H2O_WVISO1; T.H2O];
+    raw_d18O_WVISO1 = [raw_d18O_WVISO1; T.Delta_18_16];
+    raw_dD_WVISO1 = [raw_dD_WVISO1; T.Delta_D_H];
+end
+
+% Convert data to 1Hz
+wviso1_timetable = timetable(raw_wviso1_time, raw_H2O_WVISO1, raw_d18O_WVISO1, raw_dD_WVISO1);
+wviso1_1Hz = retime(wviso1_timetable,'secondly','mean');
+
+wviso1_time = wviso1_1Hz.raw_wviso1_time;
+
+
+%% Create timeseries of variables using reference netcdf times
+% Netcdf time given in 'seconds since YYYY-MM-DD 00:00:00 +0000' where YYYY-MM-DD corresponds to date of research flight.
+ref_timetable = timetable(ref_time);
+wviso1_lrt_timetable = synchronize(ref_timetable,wviso1_1Hz);
+
+
+H2O_WVISO1_1Hz = wviso1_lrt_timetable.raw_H2O_WVISO1;
+d18O_WVISO1_1Hz = wviso1_lrt_timetable.raw_d18O_WVISO1;
+dD_WVISO1_1Hz = wviso1_lrt_timetable.raw_dD_WVISO1;
+
+
+% Checks
+wviso1_lrt_timetable(10000,:)
+
+disp("original netcdf greater than wviso?")
+disp(size(ref_time,1)>size(wviso1_time,1))
+
+disp("original netcdf same size as new data?")
+disp(size(dD_WVISO1_1Hz,1)==size(ref_time,1))
+
+%% WVISO2 (2406)
+% d18O_WVISO1
+% dD_WVISO1
+% H2O_WVISO1
+
+raw_wviso1_time = [];
+raw_H2O_WVISO1 = [];
+raw_d18O_WVISO1 = [];
+raw_dD_WVISO1 = [];
+
+filePattern = fullfile(wviso_dir, 'HIDS2346*.dat'); % Read in all data files from the flight date
+dataFiles = dir(filePattern);
+for k = 1 : length(dataFiles)
+    datafile = fullfile(dataFiles(k).folder, dataFiles(k).name);
+    T = readtable(datafile);
+    % Extract timestamps
+    DateStrings = join([string(T.DATE) string(T.TIME)]); % Combine date and time variables
+    raw_wviso1_time = [raw_wviso1_time; datetime(DateStrings,'InputFormat','yyyy-MM-dd HH:mm:ss.SSS')];
+    % Extract variables
+    raw_H2O_WVISO1 = [raw_H2O_WVISO1; T.H2O];
+    raw_d18O_WVISO1 = [raw_d18O_WVISO1; T.Delta_18_16];
+    raw_dD_WVISO1 = [raw_dD_WVISO1; T.Delta_D_H];
+end
+
+% Convert data to 1Hz
+wviso1_timetable = timetable(raw_wviso1_time, raw_H2O_WVISO1, raw_d18O_WVISO1, raw_dD_WVISO1);
+wviso1_1Hz = retime(wviso1_timetable,'secondly','mean');
+
+wviso1_time = wviso1_1Hz.raw_wviso1_time;
+
+
+%% Create timeseries of variables using reference netcdf times
+% Netcdf time given in 'seconds since YYYY-MM-DD 00:00:00 +0000' where YYYY-MM-DD corresponds to date of research flight.
+ref_timetable = timetable(ref_time);
+wviso1_lrt_timetable = synchronize(ref_timetable,wviso1_1Hz);
+
+
+H2O_WVISO1_1Hz = wviso1_lrt_timetable.raw_H2O_WVISO1;
+d18O_WVISO1_1Hz = wviso1_lrt_timetable.raw_d18O_WVISO1;
+dD_WVISO1_1Hz = wviso1_lrt_timetable.raw_dD_WVISO1;
+
+
+% Checks
+wviso1_lrt_timetable(10000,:)
+
+disp("original netcdf greater than wviso?")
+disp(size(ref_time,1)>size(wviso1_time,1))
+
+disp("original netcdf same size as new data?")
+disp(size(dD_WVISO1_1Hz,1)==size(ref_time,1))
+
+
+%% Write new netcdf file
+
+nccreate(output_ncfile,"Time", "Dimensions",{"Time", time_size},"Format","classic","Datatype","int32")
+
+nccreate(output_ncfile,"dD_WVISO1", "Dimensions",{"Time", time_size},"Format","classic","Datatype","single")
+nccreate(output_ncfile,"d18O_WVISO1", "Dimensions",{"Time", time_size},"Format","classic","Datatype","single")
+nccreate(output_ncfile,"H2O_WVISO1", "Dimensions",{"Time", time_size},"Format","classic","Datatype","single")
+
+nccreate(output_ncfile,"dD_WVISO2", "Dimensions",{"Time", time_size},"Format","classic","Datatype","single")
+nccreate(output_ncfile,"d18O_WVISO2", "Dimensions",{"Time", time_size},"Format","classic","Datatype","single")
+nccreate(output_ncfile,"H2O_WVISO2", "Dimensions",{"Time", time_size},"Format","classic","Datatype","single")
+
+ncwrite(output_ncfile, "Time", time)
+
+ncwrite(output_ncfile,"dD_WVISO1",dD_WVISO1_1Hz)
+ncwrite(output_ncfile,"d18O_WVISO1",d18O_WVISO1_1Hz)
+ncwrite(output_ncfile,"H2O_WVISO1",H2O_WVISO1_1Hz)
+
+ncwrite(output_ncfile,"dD_WVISO2",dD_WVISO2_1Hz)
+ncwrite(output_ncfile,"d18O_WVISO2",d18O_WVISO2_1Hz)
+ncwrite(output_ncfile,"H2O_WVISO2",H2O_WVISO2_1Hz)
+
+
