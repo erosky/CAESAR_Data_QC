@@ -1,4 +1,4 @@
-function out = wviso_create_LRT(ref_ncfile,wviso_dir,output_ncfile)
+function out = wviso_create_LRT(ref_ncfile,wviso_dir,output_ncfile,WVISO1_offset,WVISO2_offset)
 
 %% If output file exists, delete to create new one
 if isfile(fullfile(output_ncfile))
@@ -44,12 +44,22 @@ for k = 1 : length(dataFiles)
     raw_dD_WVISO1 = [raw_dD_WVISO1; T.Delta_D_H];
 end
 
+% Apply time offsets
+raw_wviso1_time = raw_wviso1_time - seconds(WVISO1_offset);
+
+
 % Ensure WVISO times do not go outside bounds of reference times
+% Add calibration coefficients to isotope data
+% offset, scale for dD_WVISO1
+%   2.3664411   0.9128552
+% offset and scale for d18O_WVISO1
+%    2.321087    1.184239
+
 wviso1_bounds = (raw_wviso1_time >= ref_min) & (raw_wviso1_time <= ref_max);
 raw_wviso1_time = raw_wviso1_time(wviso1_bounds);
 raw_H2O_WVISO1 = raw_H2O_WVISO1(wviso1_bounds);
-raw_d18O_WVISO1 = raw_d18O_WVISO1(wviso1_bounds);
-raw_dD_WVISO1 = raw_dD_WVISO1(wviso1_bounds);
+raw_d18O_WVISO1 = 1.184239*raw_d18O_WVISO1(wviso1_bounds) + 2.321087;
+raw_dD_WVISO1 = 0.9128552*raw_dD_WVISO1(wviso1_bounds) + 2.3664411;
 
 % Convert data to 1Hz
 wviso1_timetable = timetable(raw_wviso1_time, raw_H2O_WVISO1, raw_d18O_WVISO1, raw_dD_WVISO1);
@@ -103,13 +113,21 @@ for k = 1 : length(dataFiles)
     raw_dD_WVISO2 = [raw_dD_WVISO2; T.Delta_D_H];
 end
 
+% Apply time offsets
+raw_WVISO2_time = raw_WVISO2_time - seconds(WVISO2_offset);
 
 % Ensure WVISO times do not go outside bounds of reference times
+% Add calibration coefficients to isotope data
+% offset and scale for dD_WVISO2
+%  1.8771665   0.8241852
+% offset and scale for d18O_WVISO2
+%  0.6826879   1.0301906
+
 WVISO2_bounds = (raw_WVISO2_time >= ref_min) & (raw_WVISO2_time <= ref_max);
 raw_WVISO2_time = raw_WVISO2_time(WVISO2_bounds);
 raw_H2O_WVISO2 = raw_H2O_WVISO2(WVISO2_bounds);
-raw_d18O_WVISO2 = raw_d18O_WVISO2(WVISO2_bounds);
-raw_dD_WVISO2 = raw_dD_WVISO2(WVISO2_bounds);
+raw_d18O_WVISO2 = 1.0301906*raw_d18O_WVISO2(WVISO2_bounds) + 0.6826879;
+raw_dD_WVISO2 = 0.8241852*raw_dD_WVISO2(WVISO2_bounds) + 1.8771665;
 
 % Convert data to 1Hz
 WVISO2_timetable = timetable(raw_WVISO2_time, raw_H2O_WVISO2, raw_d18O_WVISO2, raw_dD_WVISO2);

@@ -46,8 +46,10 @@ end
 
 % Ensure WVISO times do not go outside bounds of reference times
 wviso1_bounds = (raw_wviso1_time >= ref_min) & (raw_wviso1_time <= ref_max);
-size(raw_wviso1_time)
-sum(wviso1_bounds)
+raw_wviso1_time = raw_wviso1_time(wviso1_bounds);
+raw_H2O_WVISO1 = raw_H2O_WVISO1(wviso1_bounds);
+raw_d18O_WVISO1 = 1.184239*raw_d18O_WVISO1(wviso1_bounds)+2.321087;
+raw_dD_WVISO1 = raw_dD_WVISO1(wviso1_bounds);
 
 % Convert data to 1Hz
 wviso1_timetable = timetable(raw_wviso1_time, raw_H2O_WVISO1, raw_d18O_WVISO1, raw_dD_WVISO1);
@@ -103,9 +105,11 @@ end
 
 
 % Ensure WVISO times do not go outside bounds of reference times
-wviso2_bounds = (raw_wviso1_time >= ref_min) & (raw_wviso1_time <= ref_max);
-size(raw_wviso1_time)
-sum(wviso1_bounds)
+WVISO2_bounds = (raw_WVISO2_time >= ref_min) & (raw_WVISO2_time <= ref_max);
+raw_WVISO2_time = raw_WVISO2_time(WVISO2_bounds);
+raw_H2O_WVISO2 = raw_H2O_WVISO2(WVISO2_bounds);
+raw_d18O_WVISO2 = raw_d18O_WVISO2(WVISO2_bounds);
+raw_dD_WVISO2 = raw_dD_WVISO2(WVISO2_bounds);
 
 % Convert data to 1Hz
 WVISO2_timetable = timetable(raw_WVISO2_time, raw_H2O_WVISO2, raw_d18O_WVISO2, raw_dD_WVISO2);
@@ -135,8 +139,6 @@ disp(size(ref_time,1)>size(WVISO2_time,1))
 
 disp("original netcdf same size as new data?")
 disp(size(dD_WVISO2_1Hz,1)==size(ref_time,1))
-size(dD_WVISO2_1Hz,1)
-size(ref_time,1)
 
 %% Write new netcdf file
 

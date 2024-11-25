@@ -1,16 +1,17 @@
-function out = plot_ice_isotope(ncfile)
+function out = plot_ice_isotope(ncfile,wvisofile)
     %Plot a time series of CDP DSDs from SPICULE
     datetime.setDefaultFormats('default','HH:mm:ss (yyyy-MM-dd)')
     
     %Get water data from the netCDF file
     time_seconds = ncread(ncfile,'Time');
     conc_cdp = ncread(ncfile, 'CONCD_LWO');
-    conc_2ds = ncread(ncfile,'TACT2V_2DS');
+    conc_2ds = ncread(ncfile,'PLWC2DSA_2H');
     vxl = ncread(ncfile,'VMR_VXL');
     H2o_pic1 = ncread(ncfile,'H2O_WVISO1');
     H2o_pic2 = ncread(ncfile,'H2O_WVISO2');
     king = ncread(ncfile,'PLWCC');
     icing = ncread(ncfile,'RICE');
+    vwind = ncread(ncfile,'WIX');
 
     % Air thermo
     hpa = ncread(ncfile,'PSXC');
@@ -24,9 +25,10 @@ function out = plot_ice_isotope(ncfile)
     dD_2 = ncread(ncfile,'dD_WVISO2');
     d180_1 = ncread(ncfile,'d18O_WVISO1');
     d180_2 = ncread(ncfile,'d18O_WVISO2');
+    %cvi_status = ncread(wvisofile,'quality_WVISO1');
 
     %Additional cloud data
-    hvps = ncread(ncfile,'TACT2V_HVPS');
+    hvps = ncread(ncfile,'PLWC2DHA_H1');
     nevzorov_lwc = ncread(ncfile,'VCOLLWC_NEV');
     nevzorov_lwc_ref = ncread(ncfile,'VREFLWC_NEV');
 
@@ -94,11 +96,11 @@ function out = plot_ice_isotope(ncfile)
     grid on
 
     ax3 = nexttile;
-    yyaxis left
-    p5 = plot(datenum(time), icing, "DisplayName", "Icing (voltage)", "Color","g", "LineStyle", "-","LineWidth", 2);hold on
-    ylabel('Temperature');
+    %yyaxis left
+    %p5 = plot(datenum(time), cvi_status, "DisplayName", "cvi status", "Color","g", "LineStyle", "-","LineWidth", 2);hold on
+   % ylabel('bad good caution_low_H2O caution_inlet_wetting uncharacterized');
     
-    p5.DataTipTemplate.DataTipRows(end+1) = datatipRow;
+    %p5.DataTipTemplate.DataTipRows(end+1) = datatipRow;
 
     yyaxis right
     p8 = plot(datenum(time), H2o_pic1, "DisplayName", "wviso1 h20", "Color","m", "LineStyle", "-","LineWidth", 2);hold on
